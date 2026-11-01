@@ -1,33 +1,43 @@
-// config/db.js
-// Handles the MongoDB connection using Mongoose.
 
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
-  try {
-    const uri = process.env.MONGO_URI;
+    try {
+        // Reuse an existing connection
+        if (mongoose.connection.readyState === 1) {
+            return mongoose.connection;
+        }
 
-    if (!uri) {
-      throw new Error("MONGO_URI is not defined in the .env file");
+        const uri = process.env.MONGO_URI;
+
+        if (!uri) {
+            throw new Error("MONGO_URI environment variable is missing");
+        }
+
+        const conn = await mongoose.connect(uri, {
+            serverSelectionTimeoutMS: 10000
+        });
+
+        console.log(
+            `MongoDB connected: ${conn.connection.host}/${conn.connection.name}`
+        );
+
+        return conn.connection;
+
+    } catch (error) {
+        console.error("MongoDB connection error:", error.message);
+
+        // Let the Express handler handle the error
+        throw error;
     }
-
-    const conn = await mongoose.connect(uri);
-
-    console.log(`MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
-  } catch (error) {
-    // If we can't connect to the database, there is no point continuing.
-    console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
-  }
 };
 
-// Log runtime connection issues (e.g. MongoDB restarts) without crashing the app.
 mongoose.connection.on("disconnected", () => {
-  console.warn("MongoDB disconnected. Attempting will resume on next request.");
+    console.warn("MongoDB disconnected");
 });
 
-mongoose.connection.on("error", (err) => {
-  console.error(`MongoDB runtime error: ${err.message}`);
+mongoose.connection.on("error", (error) => {
+    console.error("MongoDB runtime error:", error.message);
 });
 
 module.exports = connectDB;
