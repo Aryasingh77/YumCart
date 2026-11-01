@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Yum Cart</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#F4F7EE; --ink:#131A14; --ink-soft:#5B6459; --accent:#3F8F4E; --accent-dark:#2C6B39; --line:#DEE6D4; --pop:#FF5D5D; }
+  body{ font-family:'Manrope',sans-serif; background:var(--bg); color:var(--ink); }
+  .brand{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.3rem; color:var(--ink); text-decoration:none; }
+  .brand .dot{ color:var(--pop); }
+  .topbar{ background:#fff; border-bottom:1px solid var(--line); }
+  .panel{ background:#fff; border:1px solid var(--line); border-radius:20px; padding:1.25rem; }
+  .nav-pills .nav-link{ color:var(--ink-soft); font-weight:700; border-radius:999px; }
+  .nav-pills .nav-link.active{ background:var(--accent); color:#fff; }
+  .btn-yum{ background:var(--accent); color:#fff; border:0; border-radius:999px; font-weight:700; padding:.5rem 1.1rem; }
+  .btn-yum:hover{ background:var(--accent-dark); color:#fff; }
+  .thumb{ width:44px; height:44px; border-radius:10px; object-fit:cover; background:var(--line); }
+  .form-control, .form-select{ border-radius:12px; border-color:var(--line); }
+  table td{ vertical-align:middle; }
+</style>
+</head>
+<body>
+<div class="topbar py-3 mb-4">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a class="brand" href="/admin">Yum Cart<span class="dot">.</span> <span class="badge text-bg-dark ms-2 align-middle" style="font-size:.65rem">ADMIN</span></a>
+    <div class="d-flex align-items-center gap-3">
+      <span class="small text-secondary" id="who"></span>
+      <a href="/" class="btn btn-sm btn-outline-secondary rounded-pill">View site</a>
+      <button id="logoutBtn" class="btn btn-sm btn-outline-danger rounded-pill">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <ul class="nav nav-pills mb-3" id="tabs">
+    <li class="nav-item"><button class="nav-link active" data-tab="restaurants" type="button">Restaurants</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="menu" type="button">Menu items</button></li>
+  </ul>
+
+  <div id="msg" class="alert d-none py-2 small"></div>
+
+  <!-- Restaurants -->
+  <div id="tab-restaurants" class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0 fw-bold">Restaurants</h5>
+      <button class="btn btn-yum btn-sm" id="addRestaurantBtn"><i class="bi bi-plus-lg"></i> Add restaurant</button>
+    </div>
+    <div class="table-responsive"><table class="table align-middle mb-0">
+      <thead><tr><th></th><th>Name</th><th>Cuisine</th><th>Rating</th><th>Time</th><th class="text-end">Actions</th></tr></thead>
+      <tbody id="restaurantRows"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Menu -->
+  <div id="tab-menu" class="panel d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0 fw-bold">Menu items</h5>
+      <button class="btn btn-yum btn-sm" id="addMenuBtn"><i class="bi bi-plus-lg"></i> Add item</button>
+    </div>
+    <div class="table-responsive"><table class="table align-middle mb-0">
+      <thead><tr><th></th><th>Name</th><th>Restaurant</th><th>Cuisine</th><th>Type</th><th>Price</th><th class="text-end">Actions</th></tr></thead>
+      <tbody id="menuRows"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- Modal (shared by both forms) -->
+<div class="modal fade" id="formModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content" style="border-radius:20px">
+    <div class="modal-header border-0"><h5 class="modal-title fw-bold" id="modalTitle"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer border-0"><button class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button><button class="btn btn-yum" id="saveBtn">Save</button></div>
+  </div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Auth guard: admins only ---------- */
+const token = localStorage.getItem('yumcart_token');
+let me = null;
+try { me = JSON.parse(localStorage.getItem('yumcart_user') || 'null'); } catch(e){}
+if (!token || !me || me.role !== 'admin') location.replace('/login');
+$('who').textContent = me ? me.email : '';
+
+function logout(){ localStorage.removeItem('yumcart_token'); localStorage.removeItem('yumcart_user'); location.href = '/login'; }
+$('logoutBtn').addEventListener('click', logout);
+
+async function api(path, opts = {}){
+  const res = await fetch('/api' + path, { ...opts, headers: { 'Content-Type':'application/json', Authorization: 'Bearer ' + token, ...(opts.headers||{}) } });
+  const body = await res.json().catch(() => ({}));
+  if (res.status === 401 || res.status === 403) { logout(); throw new Error(body.message); }
+  if (!res.ok || body.success === false) throw new Error(body.message || 'Request failed');
+  return body;
+}
+
+function flash(text, ok = true){
+  const m = $('msg'); m.textContent = text; m.className = 'alert py-2 small alert-' + (ok ? 'success' : 'danger');
+  setTimeout(() => m.classList.add('d-none'), 3000);
+}
+
+/* ---------- State ---------- */
+let restaurants = [], menu = [];
+const modal = new bootstrap.Modal($('formModal'));
+let onSave = null;
+
+document.querySelectorAll('#tabs [data-tab]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#tabs .nav-link').forEach(x => x.classList.toggle('active', x === b));
+  $('tab-restaurants').classList.toggle('d-none', b.dataset.tab !== 'restaurants');
+  $('tab-menu').classList.toggle('d-none', b.dataset.tab !== 'menu');
+}));
+
+async function load(){
+  try {
+    restaurants = (await api('/restaurants')).data;
+    menu = (await api('/menu')).data;
+    render();
+  } catch (e){ flash(e.message, false); }
+}
+
+function render(){
+  $('restaurantRows').innerHTML = restaurants.map(r => `
+    <tr><td><img class="thumb" src="${esc(r.img)}" alt=""></td><td class="fw-bold">${esc(r.name)}</td><td>${esc(r.cuisine)}</td><td>★ ${esc(r.rating)}</td><td>${esc(r.time)}</td>
+    <td class="text-end"><button class="btn btn-sm btn-outline-secondary rounded-pill" data-edit-r="${r._id}"><i class="bi bi-pencil"></i></button>
+    <button class="btn btn-sm btn-outline-danger rounded-pill" data-del-r="${r._id}"><i class="bi bi-trash"></i></button></td></tr>`).join('') || '<tr><td colspan="6" class="text-secondary">No restaurants yet.</td></tr>';
+
+  $('menuRows').innerHTML = menu.map(m => `
+    <tr><td><img class="thumb" src="${esc(m.img)}" alt=""></td><td class="fw-bold">${esc(m.name)}</td><td>${esc(m.restaurant?.name || '—')}</td><td>${esc(m.cuisine)}</td>
+    <td><span class="badge ${m.type === 'veg' ? 'text-bg-success' : 'text-bg-danger'}">${esc(m.type)}</span></td><td>₹${esc(m.price)}</td>
+    <td class="text-end"><button class="btn btn-sm btn-outline-secondary rounded-pill" data-edit-m="${m._id}"><i class="bi bi-pencil"></i></button>
+    <button class="btn btn-sm btn-outline-danger rounded-pill" data-del-m="${m._id}"><i class="bi bi-trash"></i></button></td></tr>`).join('') || '<tr><td colspan="7" class="text-secondary">No menu items yet.</td></tr>';
+}
+
+/* ---------- Forms ---------- */
+const field = (id, label, val = '', type = 'text', extra = '') =>
+  `<div class="mb-3"><label class="form-label small fw-bold" for="f_${id}">${label}</label><input id="f_${id}" type="${type}" class="form-control" value="${esc(val)}" ${extra}></div>`;
+const v = id => $('f_' + id).value.trim();
+
+function openRestaurantForm(r){
+  $('modalTitle').textContent = r ? 'Edit restaurant' : 'Add restaurant';
+  $('modalBody').innerHTML = field('name','Name',r?.name) + field('cuisine','Cuisine',r?.cuisine) +
+    field('rating','Rating (0–5)',r?.rating ?? 4.5,'number','step="0.1" min="0" max="5"') + field('time','Delivery time (e.g. 25-30 min)',r?.time) + field('img','Image URL',r?.img);
+  onSave = () => {
+    const data = { name:v('name'), cuisine:v('cuisine'), rating:Number(v('rating')), time:v('time'), img:v('img') };
+    return r ? api('/restaurants/' + r._id, { method:'PUT', body:JSON.stringify(data) }) : api('/restaurants', { method:'POST', body:JSON.stringify(data) });
+  };
+  modal.show();
+}
+
+function openMenuForm(m){
+  $('modalTitle').textContent = m ? 'Edit menu item' : 'Add menu item';
+  const rOpts = restaurants.map(r => `<option value="${r._id}" ${(m?.restaurant?._id || m?.restaurant) === r._id ? 'selected' : ''}>${esc(r.name)}</option>`).join('');
+  $('modalBody').innerHTML = field('name','Name',m?.name) + field('cuisine','Cuisine',m?.cuisine) +
+    `<div class="mb-3"><label class="form-label small fw-bold" for="f_type">Type</label><select id="f_type" class="form-select"><option value="veg" ${m?.type==='veg'?'selected':''}>Veg</option><option value="nonveg" ${m?.type==='nonveg'?'selected':''}>Non-veg</option></select></div>` +
+    field('price','Price (₹)',m?.price,'number','min="0"') +
+    `<div class="mb-3"><label class="form-label small fw-bold" for="f_restaurant">Restaurant</label><select id="f_restaurant" class="form-select">${rOpts}</select></div>` +
+    field('img','Image URL',m?.img) + field('desc','Description',m?.desc);
+  onSave = () => {
+    const data = { name:v('name'), cuisine:v('cuisine'), type:v('type'), price:Number(v('price')), restaurant:v('restaurant'), img:v('img'), desc:v('desc') };
+    return m ? api('/menu/' + m._id, { method:'PUT', body:JSON.stringify(data) }) : api('/menu', { method:'POST', body:JSON.stringify(data) });
+  };
+  modal.show();
+}
+
+$('saveBtn').addEventListener('click', async () => {
+  try { await onSave(); modal.hide(); flash('Saved'); await load(); }
+  catch (e){ flash(e.message, false); }
+});
+
+$('addRestaurantBtn').addEventListener('click', () => openRestaurantForm());
+$('addMenuBtn').addEventListener('click', () => restaurants.length ? openMenuForm() : flash('Add a restaurant first', false));
+
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.editR) openRestaurantForm(restaurants.find(r => r._id === t.dataset.editR));
+  if (t.dataset.editM) openMenuForm(menu.find(m => m._id === t.dataset.editM));
+  try {
+    if (t.dataset.delR && confirm('Delete this restaurant?')) { await api('/restaurants/' + t.dataset.delR, { method:'DELETE' }); flash('Deleted'); load(); }
+    if (t.dataset.delM && confirm('Delete this menu item?')) { await api('/menu/' + t.dataset.delM, { method:'DELETE' }); flash('Deleted'); load(); }
+  } catch (err){ flash(err.message, false); }
+});
+
+load();
+</script>
+</body>
+</html>

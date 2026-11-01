@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yum Cart — Good food, dropped at your door</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#F4F7EE;
+    --surface:#FFFFFF;
+    --ink:#131A14;
+    --ink-soft:#5B6459;
+    --accent:#3F8F4E;
+    --accent-dark:#2C6B39;
+    --veg:#2C6B39;
+    --nonveg:#D6432F;
+    --gold:#FFC93C;
+    --pop:#FF5D5D;
+    --line:#DEE6D4;
+    --radius:20px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    font-family:'Manrope', sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+
+  h1,h2,h3,h4,.brand{
+    font-family:'Space Grotesk', sans-serif;
+  }
+
+  .eyebrow{
+    font-family:'Manrope',sans-serif;
+    font-size:.72rem;
+    font-weight:800;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  .eyebrow::before{
+    content:'●';
+    color:var(--pop);
+    margin-right:.4em;
+    font-size:.6rem;
+  }
+
+  /* ---------- NAVBAR ---------- */
+  .navbar-yumcart{
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    font-weight:700;
+    font-size:1.6rem;
+    color:var(--ink) !important;
+    letter-spacing:-.5px;
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .brand .brand-mark{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px;
+    background:var(--ink);
+    color:var(--gold);
+    border-radius:10px;
+    font-size:1.05rem;
+    transform:rotate(-6deg);
+  }
+  .brand .dot{ color:var(--pop); }
+  .navbar-yumcart .nav-link{
+    font-weight:600;
+    color:var(--ink-soft) !important;
+    margin:0 .35rem;
+  }
+  .navbar-yumcart .nav-link:hover, .navbar-yumcart .nav-link.active{
+    color:var(--accent) !important;
+  }
+  .nav-search{
+    border-radius:999px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .nav-search input{
+    border:none; background:transparent; outline:none; box-shadow:none;
+  }
+  .cart-btn{
+    position:relative;
+    border:none;
+    background:var(--ink);
+    border-radius:999px;
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--gold);
+  }
+  .cart-btn:hover{ background:var(--accent-dark); }
+  .cart-badge{
+    position:absolute; top:-4px; right:-4px;
+    background:var(--pop); color:#fff;
+    font-size:.65rem; font-weight:700;
+    border-radius:999px; min-width:18px; height:18px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+  }
+
+  .hero{
+    position:relative;
+    overflow:hidden;
+    padding:5.5rem 0 6rem;
+    background:
+      radial-gradient(circle at 90% 10%, rgba(255,201,60,.45) 0%, rgba(255,201,60,0) 45%),
+      radial-gradient(circle at 80% 70%, rgba(63,143,78,.16) 0%, rgba(63,143,78,0) 50%);
+  }
+  .hero h1{
+    font-size:clamp(2.4rem, 5vw, 4rem);
+    font-weight:700;
+    line-height:1.04;
+    letter-spacing:-1px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--accent);
+    position:relative;
+    white-space:nowrap;
+  }
+  .hero h1 em::after{
+    content:'';
+    position:absolute;
+    left:0; right:0; bottom:.06em;
+    height:.3em;
+    background:var(--gold);
+    z-index:-1;
+    opacity:.55;
+  }
+  .hero-lede{
+    font-size:1.1rem;
+    color:var(--ink-soft);
+    max-width:480px;
+  }
+  .hero-search{
+    background:var(--surface);
+    border-radius:999px;
+    border:1px solid var(--line);
+    padding:.4rem .4rem .4rem 1.25rem;
+    box-shadow:0 18px 40px -20px rgba(19,26,20,.25);
+  }
+  .hero-search input{
+    border:none; outline:none; box-shadow:none; background:transparent;
+  }
+  .hero-stats{ gap:2rem; }
+  .hero-stats .num{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:1.6rem;
+    display:block;
+    color:var(--ink);
+  }
+  .hero-stats .lbl{
+    font-size:.78rem; color:var(--ink-soft);
+  }
+
+  .hero-visual{
+    position:relative;
+    width:min(440px, 92%);
+    margin:0 auto;
+  }
+  .hero-visual .shot{
+    width:100%;
+    aspect-ratio:1/1;
+    border-radius:32px;
+    overflow:hidden;
+    box-shadow:0 34px 70px -24px rgba(19,26,20,.4);
+    border:6px solid var(--surface);
+  }
+  .hero-visual .shot img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .hero-visual .blob{
+    position:absolute;
+    inset:-6%;
+    background:var(--gold);
+    border-radius:38% 62% 60% 40% / 45% 40% 60% 55%;
+    z-index:-1;
+    opacity:.55;
+  }
+  .float-card{
+    position:absolute;
+    background:var(--surface);
+    border-radius:16px;
+    padding:.7rem 1rem;
+    box-shadow:0 16px 30px -14px rgba(19,26,20,.35);
+    display:flex; align-items:center; gap:.6rem;
+    font-weight:700;
+    font-size:.85rem;
+    animation:float 5s ease-in-out infinite;
+  }
+  .float-card .ic{
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; color:#fff;
+    flex-shrink:0;
+  }
+  .float-card.rating{ top:8%; left:-8%; animation-delay:0s; }
+  .float-card.rating .ic{ background:var(--gold); color:var(--ink); }
+  .float-card.time{ bottom:16%; right:-10%; animation-delay:1s; }
+  .float-card.time .ic{ background:var(--accent); }
+  .float-card.orders{ bottom:-4%; left:6%; animation-delay:1.8s; }
+  .float-card.orders .ic{ background:var(--pop); }
+  .float-card .sub{ font-weight:500; color:var(--ink-soft); font-size:.72rem; display:block; }
+  @keyframes float{
+    0%,100%{ transform:translateY(0);}
+    50%{ transform:translateY(-10px);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .float-card{ animation:none; }
+  }
+  @media (max-width: 991px){
+    .float-card{ display:none; }
+  }
+
+  .scallop{
+    width:100%; height:22px; display:block;
+    background:var(--surface);
+  }
+  .scallop path{ fill:var(--bg); }
+  .scallop.flip path{ fill:var(--surface); }
+  .scallop.flip{ background:var(--bg); }
+
+  .section{ padding:4.5rem 0; }
+  .section-title{
+    font-size:clamp(1.8rem, 3vw, 2.4rem);
+    font-weight:700;
+    letter-spacing:-.5px;
+    margin-bottom:.35rem;
+  }
+  .section-sub{ color:var(--ink-soft); max-width:560px; }
+
+  .restaurant-card{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--surface);
+    overflow:hidden;
+    height:100%;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .restaurant-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 22px 40px -22px rgba(27,27,27,.3);
+  }
+  .restaurant-thumb{
+    height:150px;
+    overflow:hidden;
+    background:var(--bg);
+  }
+  .restaurant-thumb img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition:transform .4s ease;
+  }
+  .restaurant-card:hover .restaurant-thumb img{ transform:scale(1.06); }
+  .rating-pill{
+    background:var(--ink); color:#fff;
+    font-size:.72rem; font-weight:700;
+    border-radius:999px; padding:.15rem .55rem;
+  }
+
+  /* ---------- FILTER BAR ---------- */
+  .filter-bar{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:1rem 1.25rem;
+  }
+  .filter-bar .form-label{
+    font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
+  }
+  .btn-chip{
+    border:1px solid var(--line);
+    background:var(--surface);
+    border-radius:999px;
+    font-size:.82rem;
+    font-weight:600;
+    padding:.4rem .9rem;
+    color:var(--ink-soft);
+  }
+  .btn-chip.active, .btn-chip:hover{
+    background:var(--ink); color:#fff; border-color:var(--ink);
+  }
+  .form-range{ accent-color:var(--accent); }
+
+  /* ---------- FOOD CARDS ---------- */
+  .food-card{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--surface);
+    overflow:hidden;
+    height:100%;
+    display:flex; flex-direction:column;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .food-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 20px 36px -22px rgba(27,27,27,.32);
+  }
+  .food-thumb{
+    height:150px;
+    overflow:hidden;
+    cursor:pointer;
+    background:var(--bg);
+  }
+  .food-thumb img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition:transform .4s ease;
+  }
+  .food-card:hover .food-thumb img{ transform:scale(1.06); }
+  .veg-dot, .nonveg-dot{
+    width:16px; height:16px;
+    border:2px solid var(--veg);
+    border-radius:3px;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .nonveg-dot{ border-color:var(--nonveg); }
+  .veg-dot::after{
+    content:''; width:8px; height:8px; border-radius:50%; background:var(--veg);
+  }
+  .nonveg-dot::after{
+    content:''; width:0; height:0;
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-bottom:8px solid var(--nonveg);
+  }
+  .food-card .name{ cursor:pointer; font-weight:700; }
+  .food-price{ font-weight:700; color:var(--accent); }
+  .btn-add{
+    background:var(--ink); color:#fff; border:none;
+    border-radius:999px; font-weight:600; font-size:.85rem;
+    padding:.4rem 1rem;
+  }
+  .btn-add:hover{ background:var(--accent); color:#fff; }
+  .cuisine-tag{
+    font-size:.7rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em;
+  }
+  .empty-state{
+    text-align:center; padding:3rem 1rem; color:var(--ink-soft);
+  }
+
+  /* ---------- OFFERS CAROUSEL ---------- */
+  .offer-slide{
+    border-radius:24px;
+    background:linear-gradient(120deg, #241f1a, #35281d);
+    color:#fff;
+    padding:3rem 2.5rem;
+    min-height:260px;
+    display:flex; flex-direction:column; justify-content:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .offer-slide.gold{ background:linear-gradient(120deg,#FFC93C,#FF5D5D); }
+  .offer-slide.green{ background:linear-gradient(120deg,#1F4A29,#3F8F4E); }
+  .offer-code{
+    display:inline-block;
+    border:1.5px dashed rgba(255,255,255,.6);
+    padding:.35rem 1rem;
+    border-radius:8px;
+    font-weight:700;
+    letter-spacing:.08em;
+    margin-top:1rem;
+  }
+  .offer-emoji{
+    position:absolute; right:1.5rem; bottom:-1rem;
+    font-size:8rem; opacity:.18;
+  }
+  #offersCarousel .carousel-indicators [data-bs-target]{
+    background:var(--ink); width:8px; height:8px; border-radius:50%;
+  }
+  #offersCarousel .carousel-control-prev-icon,
+  #offersCarousel .carousel-control-next-icon{
+    filter:invert(1) grayscale(1);
+    background-color:rgba(0,0,0,.25);
+    border-radius:50%;
+    padding:1.1rem;
+  }
+
+  /* ---------- CART OFFCANVAS ---------- */
+  .cart-item{
+    display:flex; gap:.75rem; align-items:center;
+    padding:.85rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .cart-item .thumb{
+    width:48px; height:48px; border-radius:10px;
+    background:var(--bg);
+    overflow:hidden; flex-shrink:0;
+  }
+  .cart-item .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .qty-control{
+    display:flex; align-items:center; gap:.4rem;
+    border:1px solid var(--line); border-radius:999px; padding:.15rem .5rem;
+  }
+  .qty-control button{
+    border:none; background:none; width:22px; height:22px;
+    font-weight:700; color:var(--ink);
+  }
+  .cart-summary-row{ display:flex; justify-content:space-between; font-size:.92rem; margin-bottom:.4rem; color:var(--ink-soft); }
+  .cart-summary-row.total{ color:var(--ink); font-weight:700; font-size:1.05rem; }
+
+  /* Floating cart pill */
+  #floatingCart{
+    position:fixed; bottom:1.5rem; right:1.5rem; z-index:1040;
+    background:var(--ink); color:#fff;
+    border-radius:999px; padding:.75rem 1.3rem;
+    display:none; align-items:center; gap:.6rem;
+    box-shadow:0 16px 34px -12px rgba(27,27,27,.5);
+    border:none; font-weight:700;
+    transition:transform .2s ease;
+  }
+  #floatingCart:hover{ transform:translateY(-3px); }
+
+  /* ---------- CONTACT ---------- */
+  .contact-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:2rem;
+  }
+  .contact-info-item{
+    display:flex; gap:.85rem; align-items:flex-start; margin-bottom:1.25rem;
+  }
+  .contact-icon{
+    width:40px; height:40px; border-radius:10px;
+    background:var(--bg); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent); flex-shrink:0;
+  }
+  .form-control:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 .2rem rgba(228,87,46,.15);
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--ink); color:rgba(255,255,255,.75);
+    padding:3rem 0 1.5rem;
+  }
+  footer .brand{ color:#fff !important; }
+  footer a{ color:rgba(255,255,255,.75); text-decoration:none; }
+  footer a:hover{ color:var(--gold); }
+  .social-icon{
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+  }
+  .social-icon:hover{ background:var(--accent); border-color:var(--accent); }
+
+  /* Modal tweaks */
+  .modal-content{ border-radius:20px; border:none; }
+  .modal-food-hero{
+    height:220px; border-radius:14px;
+    background:var(--bg);
+    overflow:hidden; margin-bottom:1rem;
+  }
+  .modal-food-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar navbar-expand-lg navbar-yumcart sticky-top py-3">
+  <div class="container">
+    <a class="navbar-brand brand" href="#home"><span class="brand-mark"><i class="bi bi-basket3-fill"></i></span>Yum Cart<span class="dot">.</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav mx-lg-auto mb-3 mb-lg-0">
+        <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#restaurants">Restaurants</a></li>
+        <li class="nav-item"><a class="nav-link" href="#menu">Menu</a></li>
+        <li class="nav-item"><a class="nav-link" href="#offers">Offers</a></li>
+        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <div class="nav-search d-flex align-items-center px-2" style="width:220px;">
+          <i class="bi bi-search text-secondary ms-1"></i>
+          <input id="navSearchInput" type="text" class="form-control form-control-sm py-2" placeholder="Search dishes...">
+        </div>
+        <a id="loginLink" href="/login" class="btn btn-sm rounded-pill fw-bold px-3" style="background:var(--accent);color:#fff;"><i class="bi bi-person"></i> Login</a>
+        <div id="userMenu" class="d-none d-flex align-items-center gap-2">
+          <a id="adminLink" href="/admin" class="btn btn-sm btn-outline-dark rounded-pill d-none">Admin</a>
+          <span id="userName" class="small fw-bold text-nowrap"></span>
+          <button id="logoutBtn" class="btn btn-sm btn-outline-secondary rounded-pill" title="Logout"><i class="bi bi-box-arrow-right"></i></button>
+        </div>
+        <button class="cart-btn" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas" aria-label="Open cart">
+          <i class="bi bi-basket2 fs-5"></i>
+          <span class="cart-badge" id="navCartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="home">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="eyebrow">Delivering across Ludhiana &amp; beyond</span>
+        <h1 class="mt-2 mb-3">Good food,<br>straight to your <em>cart</em>.</h1>
+        <p class="hero-lede mb-4">Real kitchens, real cooks, no drama. Browse restaurants near you, filter by what you actually feel like eating, and track it to your doorstep.</p>
+        <div class="hero-search d-flex align-items-center mb-4" style="max-width:460px;">
+          <i class="bi bi-geo-alt text-secondary"></i>
+          <input id="heroSearchInput" type="text" class="form-control ms-2" placeholder="Search 'butter chicken', 'pizza'...">
+          <button class="btn btn-add" id="heroSearchBtn">Find food</button>
+        </div>
+        <div class="d-flex hero-stats flex-wrap">
+          <div><span class="num">120+</span><span class="lbl">Partner kitchens</span></div>
+          <div><span class="num">4.7★</span><span class="lbl">Average rating</span></div>
+          <div><span class="num">25 min</span><span class="lbl">Avg. delivery</span></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="hero-visual">
+          <div class="blob"></div>
+          <div class="shot">
+            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Chicken_Biryani.jpg?width=700" alt="Fresh meal ready for delivery" loading="lazy">
+          </div>
+          <div class="float-card rating"><span class="ic"><i class="bi bi-star-fill"></i></span><span>4.7 rating<span class="sub">2,300+ reviews</span></span></div>
+          <div class="float-card time"><span class="ic" style="color:#fff;"><i class="bi bi-lightning-charge-fill"></i></span><span>25 min<span class="sub">avg. delivery</span></span></div>
+          <div class="float-card orders"><span class="ic" style="color:#fff;"><i class="bi bi-basket3-fill"></i></span><span>50k+ orders<span class="sub">this month</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<svg class="scallop" viewBox="0 0 100 4" preserveAspectRatio="none"><path d="M0,0 Q2.5,4 5,0 T10,0 T15,0 T20,0 T25,0 T30,0 T35,0 T40,0 T45,0 T50,0 T55,0 T60,0 T65,0 T70,0 T75,0 T80,0 T85,0 T90,0 T95,0 T100,0 V4 H0 Z"></path></svg>
+
+<!-- ================= RESTAURANTS ================= -->
+<section class="section" id="restaurants">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap mb-4 gap-3">
+      <div>
+        <span class="eyebrow">Nearby &amp; trending</span>
+        <h2 class="section-title">Restaurants worth the wait</h2>
+        <p class="section-sub">Hand-picked kitchens with the best ratings this week.</p>
+      </div>
+    </div>
+    <div class="row g-4" id="restaurantGrid"></div>
+  </div>
+</section>
+
+<svg class="scallop flip" viewBox="0 0 100 4" preserveAspectRatio="none"><path d="M0,0 Q2.5,4 5,0 T10,0 T15,0 T20,0 T25,0 T30,0 T35,0 T40,0 T45,0 T50,0 T55,0 T60,0 T65,0 T70,0 T75,0 T80,0 T85,0 T90,0 T95,0 T100,0 V4 H0 Z"></path></svg>
+
+<!-- ================= MENU ================= -->
+<section class="section" style="background:var(--bg);" id="menu">
+  <div class="container">
+    <span class="eyebrow">The full spread</span>
+    <h2 class="section-title mb-4">Browse the menu</h2>
+
+    <div class="filter-bar mb-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label d-block">Type</label>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn-chip active" data-filter-type="all">All</button>
+            <button class="btn-chip" data-filter-type="veg">Veg</button>
+            <button class="btn-chip" data-filter-type="nonveg">Non-Veg</button>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="cuisineSelect">Cuisine</label>
+          <select id="cuisineSelect" class="form-select">
+            <option value="all">All cuisines</option>
+            <option value="Indian">Indian</option>
+            <option value="Italian">Italian</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Mexican">Mexican</option>
+            <option value="American">American</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="priceRange">Max price: ₹<span id="priceValue">600</span></label>
+          <input type="range" class="form-range" id="priceRange" min="50" max="600" step="10" value="600">
+        </div>
+        <div class="col-12 col-md-2">
+          <button class="btn btn-add w-100" id="resetFilters">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4" id="foodGrid"></div>
+    <div class="empty-state d-none" id="emptyState">
+      <i class="bi bi-emoji-frown fs-1"></i>
+      <p class="mt-2 mb-0">No dishes match those filters. Try widening your search.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OFFERS ================= -->
+<section class="section" id="offers">
+  <div class="container">
+    <span class="eyebrow">Limited time</span>
+    <h2 class="section-title mb-4">Offers on the table</h2>
+
+    <div id="offersCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#offersCarousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#offersCarousel" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#offersCarousel" data-bs-slide-to="2"></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <div class="offer-slide">
+            <h3 class="mb-1">50% off your first order</h3>
+            <p class="mb-0" style="max-width:420px;">New here? Get half off on orders above ₹299 from any restaurant.</p>
+            <span class="offer-code">WELCOME50</span>
+            <span class="offer-emoji">🎉</span>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="offer-slide gold">
+            <h3 class="mb-1">Free delivery all weekend</h3>
+            <p class="mb-0" style="max-width:420px;">No delivery fee on any order Friday through Sunday. No minimum.</p>
+            <span class="offer-code">FREEWKND</span>
+            <span class="offer-emoji">🛵</span>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="offer-slide green">
+            <h3 class="mb-1">Buy 1 get 1 on desserts</h3>
+            <p class="mb-0" style="max-width:420px;">Every dessert on the menu, doubled. Because one slice is never enough.</p>
+            <span class="offer-code">SWEET2X</span>
+            <span class="offer-emoji">🍰</span>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <div class="offer-slide green">
+            <h3 class="mb-1">Buy 2 get 5 on desserts</h3>
+            <p class="mb-0" style="max-width:420px;">Every dessert on the menu, doubled. Because one slice is never enough.</p>
+            <span class="offer-code">SWEET2X</span>
+            <span class="offer-emoji">🍰</span>
+          </div>
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#offersCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#offersCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<svg class="scallop" viewBox="0 0 100 4" preserveAspectRatio="none"><path d="M0,0 Q2.5,4 5,0 T10,0 T15,0 T20,0 T25,0 T30,0 T35,0 T40,0 T45,0 T50,0 T55,0 T60,0 T65,0 T70,0 T75,0 T80,0 T85,0 T90,0 T95,0 T100,0 V4 H0 Z"></path></svg>
+
+<!-- ================= CONTACT ================= -->
+<section class="section" id="contact">
+  <div class="container">
+    <span class="eyebrow">Talk to us</span>
+    <h2 class="section-title mb-4">Questions, feedback, partnerships</h2>
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="contact-info-item">
+          <div class="contact-icon"><i class="bi bi-geo-alt"></i></div>
+          <div>
+            <strong>Address</strong>
+            <p class="mb-0 text-secondary">Model Town Extension, Ludhiana, Punjab</p>
+          </div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-icon"><i class="bi bi-telephone"></i></div>
+          <div>
+            <strong>Phone</strong>
+            <p class="mb-0 text-secondary">+91 98000 12345</p>
+          </div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-icon"><i class="bi bi-envelope"></i></div>
+          <div>
+            <strong>Email</strong>
+            <p class="mb-0 text-secondary">hello@yumcart.example</p>
+          </div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-icon"><i class="bi bi-clock"></i></div>
+          <div>
+            <strong>Hours</strong>
+            <p class="mb-0 text-secondary">10:00 AM – 11:30 PM, every day</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <form class="contact-card" id="contactForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Message</label>
+              <textarea class="form-control" rows="4" required></textarea>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-add px-4 py-2">Send message</button>
+              <span class="ms-3 text-success d-none" id="contactSuccess"><i class="bi bi-check-circle"></i> Message sent</span>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <span class="brand fs-3"><span class="brand-mark" style="background:var(--gold); color:var(--ink);"><i class="bi bi-basket3-fill"></i></span>Yum Cart<span class="dot" style="color:var(--gold);">.</span></span>
+        <p class="mt-2 mb-3" style="max-width:320px;">Home-style meals and restaurant favorites, delivered fast across your city.</p>
+        <div class="d-flex gap-2">
+          <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="social-icon"><i class="bi bi-twitter-x"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="text-white mb-3">Explore</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2">
+          <li><a href="#restaurants">Restaurants</a></li>
+          <li><a href="#menu">Menu</a></li>
+          <li><a href="#offers">Offers</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="text-white mb-3">Company</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2">
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6 class="text-white mb-3">Stay in the loop</h6>
+        <div class="d-flex gap-2">
+          <input type="email" class="form-control" placeholder="you@email.com">
+          <button class="btn btn-add">Join</button>
+        </div>
+      </div>
+    </div>
+    <hr class="border-secondary mt-4">
+    <p class="text-center mb-0 small">© 2026 Yum Cart. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- ================= FLOATING CART PILL ================= -->
+<button id="floatingCart" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+  <i class="bi bi-basket2"></i>
+  <span id="floatingCartText">0 items · ₹0</span>
+</button>
+
+<!-- ================= CART OFFCANVAS ================= -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title">Your cart</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+    <div id="cartItemsContainer" class="flex-grow-1"></div>
+    <div id="cartEmptyMsg" class="text-center text-secondary py-5">
+      <i class="bi bi-basket2 fs-1"></i>
+      <p class="mt-2">Your cart is empty. Go add something delicious.</p>
+    </div>
+    <div id="cartSummary" class="pt-3 border-top d-none">
+      <div class="cart-summary-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+      <div class="cart-summary-row"><span>Delivery fee</span><span id="cartDelivery">₹0</span></div>
+      <div class="cart-summary-row total"><span>Total</span><span id="cartTotal">₹0</span></div>
+      <button class="btn btn-add w-100 py-2 mt-2" id="checkoutBtn">Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FOOD DETAIL MODAL ================= -->
+<div class="modal fade" id="foodModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4">
+      <div class="modal-header border-0 p-0 mb-2">
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="modal-food-hero"><img id="modalImg" src="" alt=""></div>
+        <span class="cuisine-tag" id="modalCuisine">Cuisine</span>
+        <h4 class="mb-1" id="modalName">Dish name</h4>
+        <p class="text-secondary" id="modalDesc">Description</p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="food-price fs-5" id="modalPrice">₹0</span>
+          <span id="modalTypeDot"></span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="qty-control">
+            <button type="button" id="modalMinus">−</button>
+            <span id="modalQty">1</span>
+            <button type="button" id="modalPlus">+</button>
+          </div>
+          <button class="btn btn-add flex-grow-1 py-2" id="modalAddBtn">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index:1080;">
+  <div id="cartToast" class="toast align-items-center text-bg-dark border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Added to cart</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ============ API CONFIG ============ */
+// Same-origin API since Express serves this HTML from its /public folder.
+const API_BASE = '/api';
+
+/* ============ AUTH ============ */
+// Login happens on /login. The JWT + user are kept in localStorage; the cart
+// is stored in MongoDB under the logged-in user's id.
+const authToken = localStorage.getItem('yumcart_token');
+let currentUser = null;
+try { currentUser = JSON.parse(localStorage.getItem('yumcart_user') || 'null'); } catch (e) {}
+if (!authToken) currentUser = null;
+const userId = currentUser ? currentUser.id : null;
+
+function logout(){
+  localStorage.removeItem('yumcart_token');
+  localStorage.removeItem('yumcart_user');
+  location.href = '/login';
+}
+
+function requireLogin(){
+  if (userId) return false;
+  location.href = '/login';
+  return true;
+}
+
+if (currentUser){
+  document.getElementById('loginLink').classList.add('d-none');
+  document.getElementById('userMenu').classList.remove('d-none');
+  document.getElementById('userName').textContent = 'Hi, ' + currentUser.name.split(' ')[0];
+  if (currentUser.role === 'admin') document.getElementById('adminLink').classList.remove('d-none');
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+}
+
+/* ============ STATE ============ */
+let restaurants = [];        // loaded from GET /api/restaurants
+let menuItems = [];          // currently displayed menu items (already filtered by the backend)
+const menuItemCache = {};    // id -> menu item, so the modal can look items up without a network call
+let cart = { items: [], subtotal: 0, deliveryFee: 0, total: 0 }; // loaded from GET /api/cart/:userId
+
+let activeType = "all";
+let activeCuisine = "all";
+let maxPrice = 600;
+let searchTerm = "";
+let modalFoodId = null;
+let modalQty = 1;
+
+/* ============ FETCH HELPER ============ */
+async function api(path, options = {}){
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { Authorization: 'Bearer ' + authToken } : {}),
+    },
+  });
+  if (res.status === 401 && authToken) { logout(); throw new Error('Session expired'); }
+  let body = null;
+  try { body = await res.json(); } catch (e) { /* no JSON body */ }
+  if (!res.ok || (body && body.success === false)){
+    const message = (body && body.message) || `Request to ${path} failed`;
+    throw new Error(message);
+  }
+  return body;
+}
+
+/* ============ LOAD + RENDER RESTAURANTS ============ */
+async function loadRestaurants(){
+  try {
+    const result = await api('/restaurants');
+    restaurants = result.data || [];
+    renderRestaurants();
+  } catch (err){
+    console.error('Failed to load restaurants:', err.message);
+    document.getElementById('restaurantGrid').innerHTML =
+      `<p class="text-secondary">Couldn't load restaurants right now. Please try again shortly.</p>`;
+  }
+}
+
+function renderRestaurants(){
+  const grid = document.getElementById('restaurantGrid');
+  grid.innerHTML = restaurants.map(r => `
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="restaurant-card">
+        <div class="restaurant-thumb"><img src="${r.img}" alt="${r.name}" loading="lazy" onerror="this.style.display='none'"></div>
+        <div class="p-3">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <h6 class="mb-0">${r.name}</h6>
+            <span class="rating-pill">${r.rating} ★</span>
+          </div>
+          <p class="cuisine-tag mb-1">${r.cuisine}</p>
+          <p class="small text-secondary mb-0"><i class="bi bi-clock me-1"></i>${r.time}</p>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============ LOAD + RENDER MENU ============ */
+// Filtering happens on the backend: we build a query string from the current
+// filter state and let MongoDB do the work, rather than downloading everything.
+function buildMenuQuery(){
+  const params = new URLSearchParams();
+  if (activeType !== "all") params.set('type', activeType);
+  if (activeCuisine !== "all") params.set('cuisine', activeCuisine);
+  if (maxPrice !== undefined) params.set('maxPrice', String(maxPrice));
+  if (searchTerm) params.set('search', searchTerm);
+  return params.toString();
+}
+
+async function loadMenu(){
+  try {
+    const query = buildMenuQuery();
+    const result = await api(`/menu${query ? `?${query}` : ''}`);
+    menuItems = result.data || [];
+    menuItems.forEach(item => { menuItemCache[item._id] = item; });
+    renderFoods();
+  } catch (err){
+    console.error('Failed to load menu:', err.message);
+  }
+}
+
+function renderFoods(){
+  const grid = document.getElementById('foodGrid');
+  const empty = document.getElementById('emptyState');
+
+  if (menuItems.length === 0){
+    grid.innerHTML = "";
+    empty.classList.remove('d-none');
+    return;
+  }
+  empty.classList.add('d-none');
+
+  grid.innerHTML = menuItems.map(f => `
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="food-card">
+        <div class="food-thumb" data-open-modal="${f._id}"><img src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.style.display='none'"></div>
+        <div class="p-3 d-flex flex-column flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <span class="cuisine-tag">${f.cuisine}</span>
+            <span class="${f.type === 'veg' ? 'veg-dot' : 'nonveg-dot'}" title="${f.type === 'veg' ? 'Vegetarian' : 'Non-Vegetarian'}"></span>
+          </div>
+          <p class="name mb-1" data-open-modal="${f._id}">${f.name}</p>
+          <p class="small text-secondary mb-2" style="min-height:2.5em;">${f.restaurant ? f.restaurant.name : ''}</p>
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <span class="food-price">₹${f.price}</span>
+            <button class="btn-add" data-add-id="${f._id}">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============ FILTER EVENTS ============ */
+document.querySelectorAll('[data-filter-type]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter-type]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeType = btn.dataset.filterType;
+    loadMenu();
+  });
+});
+
+document.getElementById('cuisineSelect').addEventListener('change', e => {
+  activeCuisine = e.target.value;
+  loadMenu();
+});
+
+document.getElementById('priceRange').addEventListener('input', e => {
+  maxPrice = Number(e.target.value);
+  document.getElementById('priceValue').textContent = maxPrice;
+  loadMenu();
+});
+
+document.getElementById('resetFilters').addEventListener('click', () => {
+  activeType = "all"; activeCuisine = "all"; maxPrice = 600; searchTerm = "";
+  document.querySelectorAll('[data-filter-type]').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-filter-type="all"]').classList.add('active');
+  document.getElementById('cuisineSelect').value = "all";
+  document.getElementById('priceRange').value = 600;
+  document.getElementById('priceValue').textContent = 600;
+  document.getElementById('navSearchInput').value = "";
+  document.getElementById('heroSearchInput').value = "";
+  loadMenu();
+});
+
+function doSearch(value){
+  searchTerm = value;
+  document.getElementById('menu').scrollIntoView({behavior:'smooth'});
+  loadMenu();
+}
+document.getElementById('navSearchInput').addEventListener('input', e => doSearch(e.target.value));
+document.getElementById('heroSearchBtn').addEventListener('click', () => {
+  doSearch(document.getElementById('heroSearchInput').value);
+});
+document.getElementById('heroSearchInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') doSearch(e.target.value);
+});
+
+/* ============ MODAL ============ */
+const foodModalEl = document.getElementById('foodModal');
+const foodModal = new bootstrap.Modal(foodModalEl);
+
+document.addEventListener('click', e => {
+  const trigger = e.target.closest('[data-open-modal]');
+  if (trigger){
+    openFoodModal(trigger.dataset.openModal);
+  }
+  const addBtn = e.target.closest('[data-add-id]');
+  if (addBtn){
+    addToCart(addBtn.dataset.addId, 1);
+  }
+});
+
+async function openFoodModal(id){
+  let f = menuItemCache[id];
+  if (!f){
+    try {
+      const result = await api(`/menu/${id}`);
+      f = result.data;
+      menuItemCache[id] = f;
+    } catch (err){
+      console.error('Failed to load food item:', err.message);
+      return;
+    }
+  }
+  modalFoodId = id;
+  modalQty = 1;
+  const modalImg = document.getElementById('modalImg');
+  modalImg.src = f.img;
+  modalImg.alt = f.name;
+  document.getElementById('modalCuisine').textContent = f.cuisine;
+  document.getElementById('modalName').textContent = f.name;
+  document.getElementById('modalDesc').textContent = f.desc;
+  document.getElementById('modalPrice').textContent = `₹${f.price}`;
+  document.getElementById('modalQty').textContent = modalQty;
+  document.getElementById('modalTypeDot').innerHTML = `<span class="${f.type === 'veg' ? 'veg-dot' : 'nonveg-dot'}"></span>`;
+  foodModal.show();
+}
+
+document.getElementById('modalMinus').addEventListener('click', () => {
+  modalQty = Math.max(1, modalQty - 1);
+  document.getElementById('modalQty').textContent = modalQty;
+});
+document.getElementById('modalPlus').addEventListener('click', () => {
+  modalQty += 1;
+  document.getElementById('modalQty').textContent = modalQty;
+});
+document.getElementById('modalAddBtn').addEventListener('click', () => {
+  addToCart(modalFoodId, modalQty);
+  foodModal.hide();
+});
+
+/* ============ CART ============ */
+// All cart math (subtotal / delivery fee / total) is done on the server using
+// the current price stored in MongoDB — the browser never sends prices.
+
+async function loadCart(){
+  if (!userId) return; // guests can browse; cart needs login
+  try {
+    const result = await api(`/cart/${userId}`);
+    cart = result.data;
+    renderCart();
+  } catch (err){
+    console.error('Failed to load cart:', err.message);
+  }
+}
+
+async function addToCart(menuItemId, qty){
+  if (requireLogin()) return;
+  try {
+    const result = await api(`/cart/${userId}/items`, {
+      method: 'POST',
+      body: JSON.stringify({ menuItemId, qty }),
+    });
+    cart = result.data;
+    renderCart();
+    showToast("Added to cart");
+  } catch (err){
+    console.error('Failed to add to cart:', err.message);
+    showToast("Couldn't add that item — please try again");
+  }
+}
+
+async function changeQty(menuItemId, delta){
+  const item = cart.items.find(c => c.menuItem._id === menuItemId);
+  if (!item) return;
+  const newQty = item.qty + delta;
+  try {
+    const result = await api(`/cart/${userId}/items/${menuItemId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ qty: Math.max(0, newQty) }),
+    });
+    cart = result.data;
+    renderCart();
+  } catch (err){
+    console.error('Failed to update quantity:', err.message);
+  }
+}
+
+async function removeFromCart(menuItemId){
+  try {
+    const result = await api(`/cart/${userId}/items/${menuItemId}`, { method: 'DELETE' });
+    cart = result.data;
+    renderCart();
+  } catch (err){
+    console.error('Failed to remove item:', err.message);
+  }
+}
+
+function renderCart(){
+  const container = document.getElementById('cartItemsContainer');
+  const emptyMsg = document.getElementById('cartEmptyMsg');
+  const summary = document.getElementById('cartSummary');
+  const navBadge = document.getElementById('navCartBadge');
+  const floating = document.getElementById('floatingCart');
+  const floatingText = document.getElementById('floatingCartText');
+
+  const items = cart.items || [];
+  const totalItems = items.reduce((sum, c) => sum + c.qty, 0);
+  navBadge.textContent = totalItems;
+
+  if (items.length === 0){
+    container.innerHTML = "";
+    emptyMsg.classList.remove('d-none');
+    summary.classList.add('d-none');
+    floating.style.display = 'none';
+    return;
+  }
+
+  emptyMsg.classList.add('d-none');
+  summary.classList.remove('d-none');
+  floating.style.display = 'flex';
+
+  container.innerHTML = items.map(c => {
+    const f = c.menuItem; // populated menu item document
+    const lineTotal = f.price * c.qty;
+    return `
+      <div class="cart-item">
+        <div class="thumb"><img src="${f.img}" alt="${f.name}"></div>
+        <div class="flex-grow-1">
+          <p class="mb-0 fw-semibold">${f.name}</p>
+          <p class="small text-secondary mb-1">₹${f.price} each</p>
+          <div class="qty-control">
+            <button data-qty-minus="${f._id}">−</button>
+            <span>${c.qty}</span>
+            <button data-qty-plus="${f._id}">+</button>
+          </div>
+        </div>
+        <div class="text-end">
+          <p class="fw-bold mb-2">₹${lineTotal}</p>
+          <button class="btn btn-sm text-danger p-0" data-remove="${f._id}"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('cartSubtotal').textContent = `₹${cart.subtotal}`;
+  document.getElementById('cartDelivery').textContent = cart.deliveryFee === 0 ? 'Free' : `₹${cart.deliveryFee}`;
+  document.getElementById('cartTotal').textContent = `₹${cart.total}`;
+  floatingText.textContent = `${totalItems} item${totalItems > 1 ? 's' : ''} · ₹${cart.total}`;
+}
+
+document.getElementById('cartItemsContainer').addEventListener('click', e => {
+  const minus = e.target.closest('[data-qty-minus]');
+  const plus = e.target.closest('[data-qty-plus]');
+  const remove = e.target.closest('[data-remove]');
+  if (minus) changeQty(minus.dataset.qtyMinus, -1);
+  if (plus) changeQty(plus.dataset.qtyPlus, 1);
+  if (remove) removeFromCart(remove.dataset.remove);
+});
+
+document.getElementById('checkoutBtn').addEventListener('click', async () => {
+  if (requireLogin()) return;
+  try {
+    await api(`/cart/${userId}/checkout`, { method: 'POST' });
+    await loadCart();
+    showToast("Order placed! Your food is on its way 🎉");
+    bootstrap.Offcanvas.getInstance(document.getElementById('cartOffcanvas'))?.hide();
+  } catch (err){
+    console.error('Checkout failed:', err.message);
+    showToast("Checkout failed — please try again");
+  }
+});
+
+/* ============ TOAST ============ */
+const toastEl = document.getElementById('cartToast');
+const toast = new bootstrap.Toast(toastEl, { delay: 1800 });
+function showToast(msg){
+  document.getElementById('toastMsg').textContent = msg;
+  toast.show();
+}
+
+/* ============ CONTACT FORM ============ */
+document.getElementById('contactForm').addEventListener('submit', e => {
+  e.preventDefault();
+  document.getElementById('contactSuccess').classList.remove('d-none');
+  e.target.reset();
+  setTimeout(() => document.getElementById('contactSuccess').classList.add('d-none'), 3000);
+});
+
+/* ============ INIT ============ */
+loadRestaurants();
+loadMenu();
+loadCart();
+</script>
+</body>
+</html>

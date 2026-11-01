@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Yum Cart</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#F4F7EE; --ink:#131A14; --ink-soft:#5B6459; --accent:#3F8F4E; --accent-dark:#2C6B39; --line:#DEE6D4; --pop:#FF5D5D; }
+  body{ font-family:'Manrope',sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+  .brand{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.6rem; text-decoration:none; color:var(--ink); display:inline-flex; align-items:center; gap:.5rem; }
+  .brand-mark{ background:var(--accent); color:#fff; width:38px; height:38px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; font-size:1.1rem; }
+  .brand .dot{ color:var(--pop); }
+  .auth-card{ background:#fff; border:1px solid var(--line); border-radius:24px; padding:2rem; width:100%; max-width:430px; box-shadow:0 20px 50px rgba(44,107,57,.08); }
+  .nav-pills .nav-link{ color:var(--ink-soft); font-weight:700; border-radius:999px; }
+  .nav-pills .nav-link.active{ background:var(--accent); color:#fff; }
+  .form-control{ border-radius:12px; padding:.7rem .9rem; border-color:var(--line); }
+  .form-control:focus{ border-color:var(--accent); box-shadow:0 0 0 .2rem rgba(63,143,78,.15); }
+  .btn-yum{ background:var(--accent); color:#fff; border:0; border-radius:999px; padding:.75rem 1rem; font-weight:700; width:100%; }
+  .btn-yum:hover{ background:var(--accent-dark); color:#fff; }
+  .btn-yum:disabled{ opacity:.7; }
+  .hint{ font-size:.8rem; color:var(--ink-soft); background:#F4F7EE; border-radius:12px; padding:.6rem .8rem; }
+</style>
+</head>
+<body>
+<div class="auth-card">
+  <div class="text-center mb-4">
+    <a class="brand" href="/"><span class="brand-mark"><i class="bi bi-basket3-fill"></i></span>Yum Cart<span class="dot">.</span></a>
+    <p class="text-secondary mt-2 mb-0" id="subtitle">Welcome back — log in to order.</p>
+  </div>
+
+  <ul class="nav nav-pills nav-fill mb-4" id="tabs">
+    <li class="nav-item"><button class="nav-link active" data-mode="login" type="button">Login</button></li>
+    <li class="nav-item"><button class="nav-link" data-mode="register" type="button">Sign up</button></li>
+  </ul>
+
+  <div id="alertBox" class="alert alert-danger py-2 small d-none" role="alert"></div>
+
+  <div id="form">
+    <div class="mb-3 d-none" id="nameGroup">
+      <label class="form-label small fw-bold" for="name">Full name</label>
+      <input id="name" type="text" class="form-control" placeholder="Your name" autocomplete="name">
+    </div>
+    <div class="mb-3">
+      <label class="form-label small fw-bold" for="email">Email</label>
+      <input id="email" type="email" class="form-control" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="mb-4">
+      <label class="form-label small fw-bold" for="password">Password</label>
+      <input id="password" type="password" class="form-control" placeholder="At least 6 characters" autocomplete="current-password">
+    </div>
+    <button id="submitBtn" class="btn btn-yum" type="button">Login</button>
+  </div>
+
+  <div class="hint mt-4" id="adminHint">
+    <i class="bi bi-shield-lock me-1"></i>Admins use the same form — you'll be taken to the admin dashboard automatically.
+  </div>
+  <div class="text-center mt-3"><a href="/" class="small text-secondary text-decoration-none"><i class="bi bi-arrow-left"></i> Back to site</a></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let mode = 'login';
+
+// Already logged in? Skip straight to the right place.
+(function(){
+  try {
+    const u = JSON.parse(localStorage.getItem('yumcart_user') || 'null');
+    if (u && localStorage.getItem('yumcart_token')) location.replace(u.role === 'admin' ? '/admin' : '/');
+  } catch(e){}
+})();
+
+document.querySelectorAll('#tabs [data-mode]').forEach(btn => btn.addEventListener('click', () => {
+  mode = btn.dataset.mode;
+  document.querySelectorAll('#tabs .nav-link').forEach(b => b.classList.toggle('active', b === btn));
+  $('nameGroup').classList.toggle('d-none', mode !== 'register');
+  $('submitBtn').textContent = mode === 'login' ? 'Login' : 'Create account';
+  $('subtitle').textContent = mode === 'login' ? 'Welcome back — log in to order.' : 'Create an account to start ordering.';
+  $('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+  showError('');
+}));
+
+function showError(msg){
+  $('alertBox').textContent = msg;
+  $('alertBox').classList.toggle('d-none', !msg);
+}
+
+async function submit(){
+  showError('');
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  const name = $('name').value.trim();
+
+  if (!email || !password || (mode === 'register' && !name)) return showError('Please fill in all fields.');
+
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/auth/' + mode, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mode === 'login' ? { email, password } : { name, email, password })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.success) throw new Error(body.message || 'Something went wrong');
+
+    localStorage.setItem('yumcart_token', body.token);
+    localStorage.setItem('yumcart_user', JSON.stringify(body.user));
+    location.href = body.user.role === 'admin' ? '/admin' : '/';
+  } catch (err){
+    showError(err.message);
+    btn.disabled = false;
+  }
+}
+
+$('submitBtn').addEventListener('click', submit);
+['email','password','name'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }));
+</script>
+</body>
+</html>
