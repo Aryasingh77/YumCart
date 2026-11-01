@@ -6,14 +6,7 @@
       "src": "server/server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": [
-          "public/**",
-          "server/config/**",
-          "server/controllers/**",
-          "server/middleware/**",
-          "server/models/**",
-          "server/routes/**"
-        ]
+        "includeFiles": "public/**"
       }
     }
   ],
